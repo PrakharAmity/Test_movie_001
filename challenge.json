@@ -1,0 +1,23 @@
+{
+  "challenge_id": "movie-dashboard-001",
+  "repository_url": "https://github.com/debug-platform-challenges/movie-dashboard.git",
+  "runtime_config": {
+    "runtime_type": "node-react",
+    "image": "node:22",
+    "install_command": "npm install",
+    "start_command": "npm run dev -- --host 0.0.0.0 --port 3000",
+    "test_command": "npm test",
+    "ports": [
+      {
+        "container_port": 3000,
+        "type": "preview"
+      }
+    ],
+    "resources": {
+      "cpu": 1,
+      "memory_mb": 2048,
+      "disk_mb": 4096,
+      "timeout_seconds": 60
+    }
+  }
+}
