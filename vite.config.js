@@ -16,6 +16,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: './tests/setup.js'
+    setupFiles: './tests/setup.js',
+    reporters: ['./tests/challengeReporter.js'],
+    silent: true
   }
 });

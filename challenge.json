@@ -1,6 +1,6 @@
 {
   "challenge_id": "movie-dashboard-001",
-  "repository_url": "https://github.com/debug-platform-challenges/movie-dashboard.git",
+  "repository_url": "https://github.com/PrakharAmity/Test_movie_001.git",
   "runtime_config": {
     "runtime_type": "node-react",
     "image": "node:22",

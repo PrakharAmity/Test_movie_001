@@ -74,4 +74,30 @@ Open your browser to preview the application.
 ```bash
 npm test
 ```
-The test runner will execute all authoritative test suites under `tests/`.
+The test runner executes all authoritative test suites under `tests/`. It suppresses verbose logging and prints structured JSON to stdout indicating the pass/fail status and execution time for each bug:
+
+```json
+{
+  "Bug 1: Release Year Upper Boundary Filter": {
+    "Status": "passed",
+    "Execution time": "12ms"
+  },
+  "Bug 2: Pagination Page Slicing": {
+    "Status": "passed",
+    "Execution time": "5ms"
+  },
+  "Bug 3: Watchlist Deletion State Management": {
+    "Status": "passed",
+    "Execution time": "15ms"
+  },
+  "Bug 4: Search Loading State Reset On Error": {
+    "Status": "passed",
+    "Execution time": "40ms"
+  },
+  "Total bugs": 4,
+  "Passed": 4,
+  "Failed": 0,
+  "Total Execution time": "72ms"
+}
+```
+The test process exits with code `0` when all tests pass, and non-zero while bugs remain.
