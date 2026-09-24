@@ -1,90 +1,52 @@
 # AI Context
 
 ## Project
-CinePulse is an offline movie discovery dashboard with catalog browsing, filtering, search, pagination, and watchlist curation.
 
-## Tech Stack
-- Language: JavaScript (ES Modules, JSX)
-- Framework: React 18
-- Runtime: Node.js (Node 22)
-- Testing: Vitest, React Testing Library, JSDOM
-- Build/Tooling: Vite 5
-- Styling: Vanilla CSS
-- Storage: Static JSON (`data/movies.json`), browser `localStorage`
+CinePulse is a client-side movie discovery dashboard that allows users to browse, search, filter, and paginate through a film catalog, as well as curate a personal watchlist.
+
+## Stack
+
+- JavaScript (ES Modules, JSX)
+- React 18
+- Vite
+- Vanilla CSS
+- Browser LocalStorage
+- Static JSON (`data/movies.json`)
 
 ## Repository Structure
-```
-data/movies.json   # Movie catalog
-src/
-  components/      # UI components
-  context/         # WatchlistContext
-  hooks/           # useMovieSearch
-  services/        # movieService
-  utils/           # pagination
-  App.jsx          # App root & state
-  index.css        # Styling
-  main.jsx         # DOM entry
-tests/             # Test suites & reporter
-vite.config.js     # Build & test config
-```
 
-## Entry Points
-- HTML: `index.html` (mounts `#root`)
-- App Mount: `src/main.jsx` (mounts `App` in `React.StrictMode`)
-- Root: `src/App.jsx` (provides `WatchlistProvider`, coordinates filters, search, and pages)
-- Config: `vite.config.js` (dev server, build settings, Vitest environment)
+- `data/movies.json` — Static catalog containing movie objects with id, title, genre, year, rating, and metadata
+- `src/App.jsx` — Root component coordinating search, filter, pagination states, and modal visibility
+- `src/components/` — UI components (`Navbar`, `FilterBar`, `MovieGrid`, `MovieCard`, `Pagination`, `WatchlistModal`)
+- `src/context/WatchlistContext.jsx` — React context providing watchlist state and management actions backed by LocalStorage
+- `src/hooks/useMovieSearch.js` — Custom hook managing asynchronous movie search query execution, loading status, and error states
+- `src/services/movieService.js` — Service functions for loading movies and applying search, genre, rating, year, and sorting filters
+- `src/utils/pagination.js` — Utility function for calculating pagination metadata and slicing page items
 
-## Architecture
-Client-side React SPA:
-Components (`Navbar`, `FilterBar`, `MovieGrid`, `Pagination`, `WatchlistModal`)
-→ `App.jsx` / `useMovieSearch`
-→ `WatchlistContext` (`localStorage`)
-→ `movieService.js` / `pagination.js`
-→ `data/movies.json`
+## Important Logic
 
-## Important Modules
+### movieService.js
+`getAllMovies()` returns the raw catalog list. `filterMovies(movies, criteria)` filters items by search string, genre, minimum rating, release year range, and sorts the result by rating, year, or title.
 
-### Catalog Service (`src/services/movieService.js`)
-Loads `data/movies.json`. `getAllMovies()` returns data; `filterMovies()` handles search, genre, rating, year, sorting.
+### pagination.js
+`paginate(items, page, pageSize)` calculates `currentPage`, `totalPages`, `totalItems`, navigation flags (`hasNext`, `hasPrev`), and slices the items array for the current page view.
 
-### Pagination (`src/utils/pagination.js`)
-`paginate()` calculates bounds, total pages, navigation flags, and slices items.
+### WatchlistContext.jsx
+Maintains `watchlist` state, automatically synchronizing changes to `localStorage` under `cinepulse_watchlist`. Exposes `addToWatchlist`, `removeFromWatchlist`, `isInWatchlist`, and `clearWatchlist` via the `useWatchlist` hook.
 
-### Watchlist Context (`src/context/WatchlistContext.jsx`)
-Global state synced with `localStorage` (`cinepulse_watchlist`). Exposes add, remove, has, and clear methods.
+### useMovieSearch.js
+Manages query string, `isLoading` flag, `error` string, and `searchResults`. Simulates asynchronous retrieval with a delay, handling matching via `filterMovies` and surfacing failures to error state.
 
-### Search Hook (`src/hooks/useMovieSearch.js`)
-Manages query, loading, error, and results state with simulated async search.
+### App.jsx
+Contains top-level application state, including active filters, current page number, and watchlist modal visibility. Debounces query input changes to trigger searches and computes filtered and paginated movie subsets.
 
-### UI Components (`src/components/`)
-`Navbar` (search, badge), `FilterBar` (filters), `MovieCard`/`MovieGrid` (cards), `Pagination` (pages), `WatchlistModal` (drawer).
+## Debugging Facts
 
-## Data Flow
-1. Catalog: `data/movies.json` → `movieService.getAllMovies()` → `App.jsx`.
-2. Filter/Search: UI inputs → `App.jsx` → `filterMovies()`.
-3. Pagination/Render: Filtered list → `paginate()` → page items → `MovieGrid`.
-4. Watchlist: User actions → `WatchlistContext` → `localStorage` sync → UI updates.
-
-## Testing
-- Framework: Vitest (`jsdom`) with `@testing-library/react`.
-- Directory: `tests/` (`setup.js` for matchers, `challengeReporter.js` for JSON output).
-- Suites:
-  - `bug1_filter.test.js`: Release year boundary filtering.
-  - `bug2_pagination.test.js`: Page slicing and item partitioning.
-  - `bug3_watchlist.test.js`: Watchlist state updates and item deletion.
-  - `bug4_search_error.test.js`: Loading state recovery on error.
-
-## Runtime / Commands
-- `npm install`: Install dependencies.
-- `npm run dev`: Start dev server (`0.0.0.0:3000`).
-- `npm test`: Run Vitest test suites.
-- `npm run build`: Compile bundle into `dist/`.
-- `npm run preview`: Preview production build.
-
-## Debugging Context
-- State Locations: Watchlist in `WatchlistContext`; filters, search, and page index in `App.jsx`.
-- Boundary Conditions: Filter or search changes reset page index to 1.
-- Persistence: Serialized to `localStorage` under `cinepulse_watchlist`.
-- Item Keying: Movies identified by string `id` (e.g., `'m-01'`).
-- Async Latency: `useMovieSearch` simulates latency; UI disables input and shows spinner during loading.
-- Pure Functions: `filterMovies` and `paginate` are pure functions with no React dependencies.
+- Movies are keyed by a unique string `id` (e.g., `'m-01'`).
+- Changing search query or filter values resets `currentPage` back to `1`.
+- Search matches query against both movie title and director (case-insensitive).
+- Catalog filtering occurs before pagination; `paginate()` only slices already-filtered results.
+- Default page size is 6 items per page.
+- Watchlist persistence is scoped to the `localStorage` key `'cinepulse_watchlist'` and initializes from stored JSON if present.
+- `filterMovies()` and `paginate()` are pure functions with no React or DOM dependencies.
+- `Navbar` search input is disabled and displays a spinner when `isLoading` is true.
