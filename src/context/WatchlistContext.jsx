@@ -21,7 +21,6 @@ export function WatchlistProvider({ children, initialItems = [] }) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(watchlist));
     } catch {
-      // Ignore localStorage errors in restricted test environments
     }
   }, [watchlist]);
 
@@ -36,10 +35,6 @@ export function WatchlistProvider({ children, initialItems = [] }) {
 
   const removeFromWatchlist = (movieId) => {
     setWatchlist((prev) => {
-      // BUG 3: Developer used indexOf(movieId) on an array of movie objects.
-      // Since `prev` contains objects, prev.indexOf(movieId) returns -1.
-      // Calling splice(-1, 1) in JavaScript removes the LAST element of the array,
-      // deleting the wrong record while leaving the target movie intact.
       const index = prev.indexOf(movieId);
       const updated = [...prev];
       updated.splice(index, 1);

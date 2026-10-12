@@ -15,7 +15,6 @@ export function MovieCard({ movie }) {
 
   return (
     <article className="movie-card" data-testid={`movie-card-${movie.id}`}>
-      {/* Poster / Header Graphic */}
       <div
         className="card-poster"
         style={{
@@ -24,7 +23,6 @@ export function MovieCard({ movie }) {
       >
         <div className="poster-overlay" />
         
-        {/* Rating Pill */}
         <div className="card-badge-rating">
           <span>★</span>
           <span>{movie.rating.toFixed(1)}</span>
@@ -40,7 +38,6 @@ export function MovieCard({ movie }) {
         </div>
       </div>
 
-      {/* Body details */}
       <div className="card-body">
         <p className="card-synopsis">{movie.synopsis}</p>
 

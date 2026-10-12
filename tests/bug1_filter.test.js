@@ -11,7 +11,6 @@ describe('Bug 1: Release Year Upper Boundary Filter', () => {
   ];
 
   it('includes movies released in the specified maxYear boundary', () => {
-    // When filtering up to 2024, films released in 2024 should be included
     const results = filterMovies(sampleMovies, {
       minYear: 2022,
       maxYear: 2024

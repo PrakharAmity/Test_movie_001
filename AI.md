@@ -49,11 +49,6 @@ CinePulse is an interactive movie discovery and catalog dashboard. It enables us
 └── vite.config.js          # Vite and Vitest build/test configuration
 ```
 
-## Entry Points
-- HTML Root: [index.html](file:///c:/Users/prakh/Desktop/Application%20project/index.html) loads fonts, sets viewport metadata, and specifies `/src/main.jsx`.
-- Application Entry: [src/main.jsx](file:///c:/Users/prakh/Desktop/Application%20project/src/main.jsx) mounts `<App />` wrapped in `React.StrictMode` into `#root`.
-- Main Component: [src/App.jsx](file:///c:/Users/prakh/Desktop/Application%20project/src/App.jsx) wraps `<CinePulseApp />` with `<WatchlistProvider />`.
-- Test Entry: Vitest executes test suites defined in `tests/`, configured via [vite.config.js](file:///c:/Users/prakh/Desktop/Application%20project/vite.config.js) with setup at [tests/setup.js](file:///c:/Users/prakh/Desktop/Application%20project/tests/setup.js).
 
 ## Architecture
 CinePulse operates as a client-side single-page application (SPA):
@@ -93,27 +88,6 @@ Encapsulates search lifecycle state: `query`, `isLoading`, `error`, and `searchR
    User input in `Navbar` updates `searchQuery` → debounced effect in `App.jsx` invokes `useMovieSearch.executeSearch()` → updates `isLoading`, `searchResults`, or `error` banner.
 4. Watchlist Persistence Flow:
    Toggle button on `MovieCard` or `WatchlistModal` invokes `addToWatchlist` or `removeFromWatchlist` → `WatchlistContext` state updates → `useEffect` persists to `localStorage` → `Navbar` badge count and card state update reactively.
-
-## Testing
-- Framework: Vitest running in `jsdom` environment with `@testing-library/react` and `@testing-library/jest-dom`.
-- Test Directory: `tests/`
-- Configuration: `vite.config.js` sets `globals: true`, points `setupFiles` to `./tests/setup.js`, and specifies `./tests/challengeReporter.js` as reporter.
-- Test Organization:
-  - `bug1_filter.test.js`: Validates `filterMovies` behavior against sample movie fixtures and full dataset.
-  - `bug2_pagination.test.js`: Tests `paginate` slice calculations and consecutive page boundary partitioning.
-  - `bug3_watchlist.test.js`: Tests `WatchlistProvider` and `useWatchlist` item removal and state retention using `renderHook`.
-  - `bug4_search_error.test.js`: Tests `useMovieSearch` hook state transitions during error and recovery scenarios.
-  - `challengeReporter.js`: Custom reporter producing a structured JSON summary of test suite outcomes and execution times.
-
-## Runtime / Commands
-- Start Development Server:
-  `npm run dev` (starts Vite dev server listening on `0.0.0.0:3000`)
-- Run Automated Test Suite:
-  `npm test` (runs Vitest in single-run mode via `vitest run`)
-- Build Production Bundle:
-  `npm run build` (outputs compiled assets to `dist/`)
-- Preview Production Build:
-  `npm run preview` (serves the `dist/` directory on `0.0.0.0:3000`)
 
 ## Debugging Context
 - Module Separation: Core data manipulation logic is isolated from UI components. Filtering resides entirely in `movieService.js`, pagination slicing logic is isolated in `pagination.js`, and search lifecycle handling lives in `useMovieSearch.js`.

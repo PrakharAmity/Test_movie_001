@@ -1,9 +1,6 @@
 import { useState, useCallback } from 'react';
 import { filterMovies, getAllMovies } from '../services/movieService';
 
-/**
- * Custom hook for searching movies with simulated async latency and error handling
- */
 export function useMovieSearch() {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +12,6 @@ export function useMovieSearch() {
     setError(null);
 
     try {
-      // Simulate asynchronous query delay / network request
       await new Promise((resolve, reject) => {
         setTimeout(() => {
           if (searchQuery && (searchQuery.includes('__error__') || searchQuery === 'THROW_NETWORK_ERROR')) {
@@ -32,9 +28,6 @@ export function useMovieSearch() {
       return matches;
     } catch (err) {
       setError(err.message || 'An unexpected error occurred during search.');
-      // BUG 4: Developer omitted `setIsLoading(false)` inside the catch block
-      // (or in a `finally` block). When a search fails, `isLoading` remains `true`
-      // permanently, leaving the search bar stuck in a loading state.
     }
   }, []);
 
@@ -49,7 +42,7 @@ export function useMovieSearch() {
     query,
     setQuery,
     isLoading,
-    setIsLoading, // exported if candidate needs or for direct test inspection
+    setIsLoading,
     error,
     setError,
     searchResults,

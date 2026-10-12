@@ -20,17 +20,14 @@ describe('Bug 3: Watchlist Deletion State Management', () => {
         React.createElement(WatchlistProvider, { initialItems: sampleWatchlist }, children)
     });
 
-    // Attempt to remove the first movie ('m-01')
     act(() => {
       result.current.removeFromWatchlist('m-01');
     });
 
     const remainingIds = result.current.watchlist.map((m) => m.id);
 
-    // 'm-01' should be removed
     expect(remainingIds).not.toContain('m-01');
 
-    // 'm-02' and 'm-03' (the last item) must remain intact
     expect(remainingIds).toContain('m-02');
     expect(remainingIds).toContain('m-03');
     expect(result.current.watchlist).toHaveLength(2);
@@ -42,7 +39,6 @@ describe('Bug 3: Watchlist Deletion State Management', () => {
         React.createElement(WatchlistProvider, { initialItems: sampleWatchlist }, children)
     });
 
-    // Attempt to remove the middle movie ('m-02')
     act(() => {
       result.current.removeFromWatchlist('m-02');
     });

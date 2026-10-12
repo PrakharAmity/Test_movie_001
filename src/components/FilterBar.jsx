@@ -5,7 +5,6 @@ const GENRES = ['ALL', 'Sci-Fi', 'Action', 'Drama', 'Animation', 'Crime', 'Comed
 export function FilterBar({ filters, onFilterChange, onReset }) {
   return (
     <div className="filter-panel" role="region" aria-label="Movie filters">
-      {/* Genre Filter */}
       <div className="filter-group">
         <label htmlFor="filter-genre" className="filter-label">Genre</label>
         <select
@@ -22,7 +21,6 @@ export function FilterBar({ filters, onFilterChange, onReset }) {
         </select>
       </div>
 
-      {/* Min Rating Filter */}
       <div className="filter-group">
         <label htmlFor="filter-rating" className="filter-label">Min Rating</label>
         <select
@@ -39,7 +37,6 @@ export function FilterBar({ filters, onFilterChange, onReset }) {
         </select>
       </div>
 
-      {/* Release Year Range Filter */}
       <div className="filter-group">
         <span className="filter-label">Year Range</span>
         <div className="year-input-group">
@@ -67,7 +64,6 @@ export function FilterBar({ filters, onFilterChange, onReset }) {
         </div>
       </div>
 
-      {/* Sort Selector */}
       <div className="filter-group">
         <label htmlFor="filter-sort" className="filter-label">Sort By</label>
         <select
@@ -84,7 +80,6 @@ export function FilterBar({ filters, onFilterChange, onReset }) {
         </select>
       </div>
 
-      {/* Reset */}
       <button
         id="btn-reset-filters"
         type="button"

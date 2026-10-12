@@ -34,7 +34,6 @@ export function CinePulseApp() {
     clearError
   } = useMovieSearch();
 
-  // Trigger search when query changes (with debounce)
   useEffect(() => {
     const timer = setTimeout(() => {
       executeSearch(searchQuery, allMovies);
@@ -42,7 +41,6 @@ export function CinePulseApp() {
     return () => clearTimeout(timer);
   }, [searchQuery, allMovies, executeSearch]);
 
-  // Reset to page 1 on filter or search changes
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
     setCurrentPage(1);
@@ -54,7 +52,6 @@ export function CinePulseApp() {
     setCurrentPage(1);
   };
 
-  // Filter movies
   const filteredMovies = useMemo(() => {
     return filterMovies(allMovies, {
       search: searchQuery,
@@ -66,7 +63,6 @@ export function CinePulseApp() {
     });
   }, [allMovies, searchQuery, filters]);
 
-  // Paginate results
   const paginationData = useMemo(() => {
     return paginate(filteredMovies, currentPage, PAGE_SIZE);
   }, [filteredMovies, currentPage]);
@@ -94,7 +90,6 @@ export function CinePulseApp() {
           </p>
         </section>
 
-        {/* Error notification */}
         {searchError && (
           <div className="error-banner" role="alert" data-testid="search-error-banner">
             <span>⚠️ {searchError}</span>
