@@ -1,16 +1,7 @@
-# AI Context
+# CinePulse
 
-## Project
-CinePulse is an interactive movie discovery and catalog dashboard. It enables users to browse a collection of films, apply multi-criteria filters and sorting, perform debounced searches, navigate paginated results, and manage a personal watchlist with local storage persistence.
-
-## Tech Stack
-- Language: JavaScript (ES Modules, JSX)
-- Framework: React 18 (`react`, `react-dom`)
-- Runtime: Node.js (Node 22 runtime environment)
-- Database / Data: Bundled static JSON dataset (`data/movies.json`)
-- Styling: Vanilla CSS (`src/index.css`) utilizing CSS variables and responsive grid layouts
-- Testing: Vitest (`vitest`), React Testing Library (`@testing-library/react`), `@testing-library/jest-dom`, and `jsdom`
-- Build / Tooling: Vite 5 (`vite`, `@vitejs/plugin-react`)
+## Description
+CinePulse is an interactive movie discovery and curation dashboard that allows users to explore an offline cinema vault, perform multi-criteria filtering by genre, rating, and release year range, execute debounced asynchronous title and director searches, navigate paginated catalog results, and curate a personal watchlist. Built with React 18, Vite 5, and Vanilla CSS with custom properties and responsive grid styling, the client-side single-page application mounts via `src/main.jsx` into `#root`, coordinates state and view composition through `src/App.jsx`, leverages `src/services/movieService.js` and `src/utils/pagination.js` for data retrieval and array partitioning over a bundled JSON dataset (`data/movies.json`), handles asynchronous query lifecycles through the `useMovieSearch` hook, and synchronizes watchlist state with browser `localStorage`.
 
 ## Repository Structure
 ```
@@ -39,59 +30,34 @@ CinePulse is an interactive movie discovery and catalog dashboard. It enables us
 │   │   └── movieService.js     # Data retrieval, filtering, and sorting logic
 │   └── utils/
 │       └── pagination.js       # Dataset slicing and pagination metadata calculations
-├── tests/
-│   ├── bug1_filter.test.js     # Catalog filtering tests
-│   ├── bug2_pagination.test.js # Pagination calculation tests
-│   ├── bug3_watchlist.test.js  # Watchlist context operations tests
-│   ├── bug4_search_error.test.js # Search error and loading lifecycle tests
-│   ├── challengeReporter.js   # Custom Vitest reporter generating execution JSON
-│   └── setup.js               # Vitest environment setup
+|
 └── vite.config.js          # Vite and Vitest build/test configuration
-```
 
 
-## Architecture
-CinePulse operates as a client-side single-page application (SPA):
-- Presentation Layer: Modular React components in `src/components/` handle UI rendering and user interactions.
-- Orchestration Layer: `src/App.jsx` coordinates query filters, current page state, modal toggling, and binds search hook results to catalog views.
-- Domain Logic & Services: `src/services/movieService.js` provides querying, filtering, and sorting routines against the static dataset. `src/utils/pagination.js` provides pure pagination math and item slicing.
-- State Management: `WatchlistContext` manages user watchlist collections across components, synchronizing state with browser `localStorage`.
-- Search & Async Logic: `src/hooks/useMovieSearch.js` decouples asynchronous query processing, debounce delays, and error tracking from the view.
+## Bugs and Bug Locations
 
-## Important Modules
+### 1. Upper Boundary Year Movies Missing From Filtered Catalog
+- **Bug location:** `src/services/movieService.js`, within the `filterMovies` function (lines 38–40).
+- **How to observe it:** Apply a filter specifying `maxYear: 2024` (e.g., `filterMovies(movies, { minYear: 2020, maxYear: 2024 })` or by setting the max year input in the UI filter bar to 2024).
+- **Failure:** Movies released in 2024 (such as *Dune: Part Two* and *Challengers*) are omitted from the filtered results because the comparison `movie.year >= maxYear` incorrectly excludes movies matching the upper bound year.
+- **Expected:** Movies released in 2024 should be included; only movies with release years strictly greater than `maxYear` (`movie.year > maxYear`) should be filtered out.
 
-### Catalog & Filtering (`src/services/movieService.js`)
-Loads `data/movies.json` and exposes `getAllMovies()` and `filterMovies()`. Evaluates filtering predicates across text search (title/director), genre matching, minimum rating thresholds, and release year bounds, followed by sorting by rating, year, or title.
+### 2. Pagination Slicing Omits the Final Item on Each Page
+- **Bug location:** `src/utils/pagination.js`, within the `paginate` function (lines 9–11).
+- **How to observe it:** Call `paginate(items, 1, 6)` on an array of 18 items or view the catalog in the UI with the default page size of 6 items per page.
+- **Failure:** The slice end index is computed as `startIndex + safePageSize - 1`, resulting in only 5 items being returned for page 1 instead of 6, and skipping every 6th item across consecutive pages.
+- **Expected:** The slice end index should be `startIndex + safePageSize`, returning the full configured page size of 6 items on full pages and partitioning consecutive pages seamlessly without data loss.
 
-### Pagination (`src/utils/pagination.js`)
-Exposes `paginate(items, page, pageSize)`. Calculates derived properties such as `totalPages`, `currentPage`, `hasNext`, `hasPrev`, and extracts the active slice of items.
+### 3. Removing a Movie From Watchlist Deletes the Last Entry Instead
+- **Bug location:** `src/context/WatchlistContext.jsx`, within the `removeFromWatchlist` function (lines 37–42).
+- **How to observe it:** Add multiple movies to the watchlist (such as movies with IDs `'m-01'`, `'m-02'`, and `'m-03'`), open the Watchlist drawer, and click the "Remove" button on the first movie (`'m-01'`).
+- **Failure:** The function runs `prev.indexOf(movieId)` on an array of movie objects, which returns `-1`. Executing `updated.splice(-1, 1)` deletes the last item in the array (`'m-03'`), leaving the clicked movie (`'m-01'`) in the list.
+- **Expected:** The function should match the movie by its unique `id` property (e.g., via `filter` or `findIndex`), removing only the targeted movie without mutating or deleting unrelated entries.
 
-### Watchlist Context (`src/context/WatchlistContext.jsx`)
-Supplies `WatchlistProvider` and `useWatchlist()` hook. Exposes methods to add (`addToWatchlist`), remove (`removeFromWatchlist`), query (`isInWatchlist`), and clear (`clearWatchlist`) entries, persisting state to `localStorage` under `cinepulse_watchlist`.
+### 4. Search Bar Remains Frozen in Loading State on Query Error
+- **Bug location:** `src/hooks/useMovieSearch.js`, within the `executeSearch` function (lines 27–31).
+- **How to observe it:** Execute a search query that fails or throws a network rejection (e.g., querying `'THROW_NETWORK_ERROR'` or `'__error__query'`).
+- **Failure:** The `catch` block catches the error and sets the error message, but never calls `setIsLoading(false)`. As a result, `isLoading` remains permanently `true`, keeping the search input disabled with a spinning loading indicator and preventing future searches.
+- **Expected:** The loading flag should be reset to `false` when a query fails (such as in a `finally` block or within the `catch` handler), allowing the user to immediately submit new searches after an error.
 
-### Search Hook (`src/hooks/useMovieSearch.js`)
-Encapsulates search lifecycle state: `query`, `isLoading`, `error`, and `searchResults`. Manages asynchronous query dispatch via `executeSearch()` and state clearing via `resetSearch()`.
 
-### View Components (`src/components/`)
-- `Navbar.jsx`: Brand banner, search text input with loading indicator, and watchlist badge counter button.
-- `FilterBar.jsx`: Inputs for genre selection, minimum rating, release year range, sort order, and a filter reset trigger.
-- `MovieGrid.jsx` & `MovieCard.jsx`: Grid layout rendering movie poster details, ratings, genres, and watchlist toggle buttons.
-- `Pagination.jsx`: Numbered page selectors and previous/next page navigation buttons.
-- `WatchlistModal.jsx`: Modal drawer listing saved movies with removal actions and a clear all option.
-
-## Data Flow
-1. Catalog Ingestion & Filtering:
-   `movies.json` → `movieService.getAllMovies()` → `App.jsx` evaluates `filterMovies()` with active filter state → outputs `filteredMovies`.
-2. Pagination Pipeline:
-   `filteredMovies` + `currentPage` + `PAGE_SIZE` (6) → `pagination.paginate()` → provides `items` to `MovieGrid` → maps individual items to `MovieCard`.
-3. Search Flow:
-   User input in `Navbar` updates `searchQuery` → debounced effect in `App.jsx` invokes `useMovieSearch.executeSearch()` → updates `isLoading`, `searchResults`, or `error` banner.
-4. Watchlist Persistence Flow:
-   Toggle button on `MovieCard` or `WatchlistModal` invokes `addToWatchlist` or `removeFromWatchlist` → `WatchlistContext` state updates → `useEffect` persists to `localStorage` → `Navbar` badge count and card state update reactively.
-
-## Debugging Context
-- Module Separation: Core data manipulation logic is isolated from UI components. Filtering resides entirely in `movieService.js`, pagination slicing logic is isolated in `pagination.js`, and search lifecycle handling lives in `useMovieSearch.js`.
-- State Boundaries: Global state is limited to the watchlist (`WatchlistContext`). Catalog filters, pagination indices, and modal visibility are managed locally in `App.jsx`.
-- Data Formats: Movie objects contain `id` (string), `title` (string), `year` (number), `genre` (string), `rating` (number), `director` (string), `runtime` (string), `synopsis` (string), and styling attributes (`themeColor`, `accentColor`, `featured`).
-- Boundaries & Type Handling: Numeric filter inputs for `minRating`, `minYear`, and `maxYear` are converted via `Number()` in `FilterBar.jsx` before reaching `filterMovies`. Pagination calculates slice bounds based on 1-indexed page arguments and zero-based array indexing.
-- Storage Fallbacks: `WatchlistContext.jsx` wraps `localStorage` calls in try/catch blocks to gracefully handle restricted browser/test environments.
